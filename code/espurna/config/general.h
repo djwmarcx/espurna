@@ -187,6 +187,7 @@
 
 // Topics that will be reported in heartbeat
 #define HEARTBEAT_REPORT_STATUS     1
+#define HEARTBEAT_REPORT_SSID       1
 #define HEARTBEAT_REPORT_IP         1
 #define HEARTBEAT_REPORT_MAC        1
 #define HEARTBEAT_REPORT_RSSI       1
@@ -236,6 +237,8 @@
 
 #ifndef BUTTON_LNGLNGCLICK_DELAY
 #define BUTTON_LNGLNGCLICK_DELAY    10000       // Time in ms holding the button down to get a long-long click
+#define BUTTON_MQTT_SEND_ALL_EVENTS 0           // 0 - to send only events the are bound to actions
+                                                // 1 - to send all button events to MQTT
 #endif
 
 //------------------------------------------------------------------------------
@@ -729,6 +732,7 @@
 #define MQTT_TOPIC_LED              "led"
 #define MQTT_TOPIC_BUTTON           "button"
 #define MQTT_TOPIC_IP               "ip"
+#define MQTT_TOPIC_SSID             "ssid"
 #define MQTT_TOPIC_VERSION          "version"
 #define MQTT_TOPIC_UPTIME           "uptime"
 #define MQTT_TOPIC_DATETIME         "datetime"
@@ -796,7 +800,7 @@
 // -----------------------------------------------------------------------------
 
 #ifndef SETTINGS_AUTOSAVE
-#define SETTINGS_AUTOSAVE       1           // Autosave settings o force manual commit
+#define SETTINGS_AUTOSAVE       1           // Autosave settings or force manual commit
 #endif
 
 #define SETTINGS_MAX_LIST_COUNT 10          // Maximum index for settings lists
@@ -1348,6 +1352,10 @@
 
 #ifndef RFM69_MAX_TOPICS
 #define RFM69_MAX_TOPICS            50
+#endif
+
+#ifndef RFM69_MAX_NODES
+#define RFM69_MAX_NODES             255
 #endif
 
 #ifndef RFM69_DEFAULT_TOPIC
