@@ -99,6 +99,25 @@
 #define ANALOG_DELAY                    0       // Delay between samples in micros
 #endif
 
+//Use the following to perform scaling of raw analog values
+//   scaledRead = ( factor * rawRead ) + offset
+//
+//Please take note that the offset is not affected by the scaling factor
+
+#ifndef ANALOG_FACTOR
+#define ANALOG_FACTOR                    1.0       // Multiply raw reading by this factor
+#endif
+
+#ifndef ANALOG_OFFSET
+#define ANALOG_OFFSET                    0.0       // Add this offset to *scaled* value
+#endif
+
+// Round to this number of decimals
+#ifndef ANALOG_DECIMALS
+#define ANALOG_DECIMALS                  2
+#endif
+
+
 //------------------------------------------------------------------------------
 // BH1750
 // Enable support by passing BH1750_SUPPORT=1 build flag
@@ -114,6 +133,21 @@
 #endif
 
 #define BH1750_MODE                     BH1750_CONTINUOUS_HIGH_RES_MODE
+
+//------------------------------------------------------------------------------
+// BMP085/BMP180
+// Enable support by passing BMP180_SUPPORT=1 build flag
+//------------------------------------------------------------------------------
+
+#ifndef BMP180_SUPPORT
+#define BMP180_SUPPORT                  0
+#endif
+
+#ifndef BMP180_ADDRESS
+#define BMP180_ADDRESS                  0x00    // 0x00 means auto
+#endif
+
+#define BMP180_MODE                     3       // 0 for ultra-low power, 1 for standard, 2 for high resolution and 3 for ultrahigh resolution
 
 //------------------------------------------------------------------------------
 // BME280/BMP280
@@ -423,6 +457,11 @@
 #define HLW8012_USE_INTERRUPTS          1       // Use interrupts to trap HLW8012 signals
 #endif
 
+#ifndef HLW8012_WAIT_FOR_WIFI
+#define HLW8012_WAIT_FOR_WIFI           0       // Weather to enable interrupts only after
+                                                // wifi connection has been stablished
+#endif
+
 #ifndef HLW8012_INTERRUPT_ON
 #define HLW8012_INTERRUPT_ON            CHANGE  // When to trigger the interrupt
                                                 // Use CHANGE for HLW8012
@@ -523,40 +562,6 @@
 #endif
 
 //------------------------------------------------------------------------------
-// SDS011 particulates sensor
-// Enable support by passing SDS011_SUPPORT=1 build flag
-//------------------------------------------------------------------------------
-
-#ifndef SDS011_SUPPORT
-#define SDS011_SUPPORT                   0
-#endif
-
-#ifndef SDS011_RX_PIN
-#define SDS011_RX_PIN                    14
-#endif
-
-#ifndef SDS011_TX_PIN
-#define SDS011_TX_PIN                    12
-#endif
-
-//------------------------------------------------------------------------------
-// SenseAir CO2 sensor
-// Enable support by passing SENSEAIR_SUPPORT=1 build flag
-//------------------------------------------------------------------------------
-
-#ifndef SENSEAIR_SUPPORT
-#define SENSEAIR_SUPPORT                0
-#endif
-
-#ifndef SENSEAIR_RX_PIN
-#define SENSEAIR_RX_PIN                 0
-#endif
-
-#ifndef SENSEAIR_TX_PIN
-#define SENSEAIR_TX_PIN                 2
-#endif
-
-//------------------------------------------------------------------------------
 // Particle Monitor based on Plantower PMS
 // Enable support by passing PMSX003_SUPPORT=1 build flag
 //------------------------------------------------------------------------------
@@ -577,20 +582,46 @@
 #endif
 
 #ifndef PMS_USE_SOFT
-#define PMS_USE_SOFT               0       // If PMS_USE_SOFT == 1, DEBUG_SERIAL_SUPPORT must be 0
+#define PMS_USE_SOFT                    0       // If PMS_USE_SOFT == 1, DEBUG_SERIAL_SUPPORT must be 0
 #endif
 
 #ifndef PMS_RX_PIN
-#define PMS_RX_PIN                 13      // Software serial RX GPIO (if PMS_USE_SOFT == 1)
+#define PMS_RX_PIN                      13      // Software serial RX GPIO (if PMS_USE_SOFT == 1)
 #endif
 
 #ifndef PMS_TX_PIN
-#define PMS_TX_PIN                 15      // Software serial TX GPIO (if PMS_USE_SOFT == 1)
+#define PMS_TX_PIN                      15      // Software serial TX GPIO (if PMS_USE_SOFT == 1)
 #endif
 
 #ifndef PMS_HW_PORT
-#define PMS_HW_PORT                Serial  // Hardware serial port (if PMS_USE_SOFT == 0)
+#define PMS_HW_PORT                     Serial  // Hardware serial port (if PMS_USE_SOFT == 0)
 #endif
+
+//------------------------------------------------------------------------------
+// Pulse Meter Energy monitor
+// Enable support by passing PULSEMETER_SUPPORT=1 build flag
+//------------------------------------------------------------------------------
+
+#ifndef PULSEMETER_SUPPORT
+#define PULSEMETER_SUPPORT              0
+#endif
+
+#ifndef PULSEMETER_PIN
+#define PULSEMETER_PIN                  5
+#endif
+
+#ifndef PULSEMETER_ENERGY_RATIO
+#define PULSEMETER_ENERGY_RATIO         4000        // In pulses/kWh
+#endif
+
+#ifndef PULSEMETER_INTERRUPT_ON
+#define PULSEMETER_INTERRUPT_ON         FALLING
+#endif
+
+#ifndef PULSEMETER_DEBOUNCE
+#define PULSEMETER_DEBOUNCE             50         // Do not register pulses within less than 50 millis
+#endif
+
 //------------------------------------------------------------------------------
 // PZEM004T based power monitor
 // Enable support by passing PZEM004T_SUPPORT=1 build flag
@@ -626,6 +657,40 @@
 
 #ifndef PZEM004T_MAX_DEVICES
 #define PZEM004T_MAX_DEVICES            3
+#endif
+
+//------------------------------------------------------------------------------
+// SDS011 particulates sensor
+// Enable support by passing SDS011_SUPPORT=1 build flag
+//------------------------------------------------------------------------------
+
+#ifndef SDS011_SUPPORT
+#define SDS011_SUPPORT                   0
+#endif
+
+#ifndef SDS011_RX_PIN
+#define SDS011_RX_PIN                    14
+#endif
+
+#ifndef SDS011_TX_PIN
+#define SDS011_TX_PIN                    12
+#endif
+
+//------------------------------------------------------------------------------
+// SenseAir CO2 sensor
+// Enable support by passing SENSEAIR_SUPPORT=1 build flag
+//------------------------------------------------------------------------------
+
+#ifndef SENSEAIR_SUPPORT
+#define SENSEAIR_SUPPORT                0
+#endif
+
+#ifndef SENSEAIR_RX_PIN
+#define SENSEAIR_RX_PIN                 0
+#endif
+
+#ifndef SENSEAIR_TX_PIN
+#define SENSEAIR_TX_PIN                 2
 #endif
 
 //------------------------------------------------------------------------------
@@ -718,6 +783,77 @@
 #define V9261F_POWER_FACTOR             153699.0
 #define V9261F_RPOWER_FACTOR            V9261F_CURRENT_FACTOR
 
+//------------------------------------------------------------------------------
+// VEML6075 based power sensor
+// Enable support by passing VEML6075_SUPPORT=1 build flag
+//------------------------------------------------------------------------------
+
+#ifndef VEML6075_SUPPORT
+#define VEML6075_SUPPORT                  0
+#endif
+
+#ifndef VEML6075_INTEGRATION_TIME
+#define VEML6075_INTEGRATION_TIME         VEML6075::IT_100MS        // The time, in milliseconds, allocated for a single
+#endif                                                              // measurement. A longer timing budget allows for more
+                                                                    // accurate results at the cost of power.
+
+#ifndef VEML6075_DYNAMIC_MODE
+#define VEML6075_DYNAMIC_MODE             VEML6075::DYNAMIC_NORMAL  // The dynamic mode can either be normal or high. In high
+#endif                                                              // dynamic mode, the resolution increases by about two
+                                                                    // times.
+//------------------------------------------------------------------------------
+// VL53L1X
+// Enable support by passing VL53L1X_SUPPORT=1 build flag
+//------------------------------------------------------------------------------
+
+#ifndef VL53L1X_SUPPORT
+#define VL53L1X_SUPPORT                              0
+#endif
+
+#ifndef VL53L1X_I2C_ADDRESS
+#define VL53L1X_I2C_ADDRESS                          0x00          // 0x00 means auto
+#endif
+
+#ifndef VL53L1X_DISTANCE_MODE
+#define VL53L1X_DISTANCE_MODE                        VL53L1X::Long // The distance mode of the sensor. Can be one of
+#endif                                                             // `VL53L1X::Short`, `VL53L1X::Medium`, or `VL53L1X::Long.
+                                                                   // Shorter distance modes are less affected by ambient light
+                                                                   // but have lower maximum ranges, especially in the dark.
+
+
+#ifndef VL53L1X_MEASUREMENT_TIMING_BUDGET
+#define VL53L1X_MEASUREMENT_TIMING_BUDGET            140000        // The time, in microseconds, allocated for a single
+                                                                   // measurement. A longer timing budget allows for more
+                                                                   // accurate at the cost of power. The minimum budget is
+                                                                   // 20 ms (20000 us) in short distance mode and 33 ms for
+                                                                   // medium and long distance modes.
+#endif
+
+#ifndef VL53L1X_INTER_MEASUREMENT_PERIOD
+#define VL53L1X_INTER_MEASUREMENT_PERIOD             50            // Period, in milliseconds, determining how
+#endif                                                             // often the sensor takes a measurement.
+
+//------------------------------------------------------------------------------
+// EZOPH pH meter
+// Enable support by passing EZOPH_SUPPORT=1 build flag
+//------------------------------------------------------------------------------
+
+#ifndef EZOPH_SUPPORT
+#define EZOPH_SUPPORT                0
+#endif
+
+#ifndef EZOPH_RX_PIN
+#define EZOPH_RX_PIN                 13      // Software serial RX GPIO
+#endif
+
+#ifndef EZOPH_TX_PIN
+#define EZOPH_TX_PIN                 15      // Software serial TX GPIO
+#endif
+
+#ifndef EZOPH_SYNC_INTERVAL
+#define EZOPH_SYNC_INTERVAL          1000    // Amount of time (in ms) sync new readings.
+#endif
+
 // =============================================================================
 // Sensor helpers configuration - can't move to dependencies.h
 // =============================================================================
@@ -727,6 +863,7 @@
     AM2320_SUPPORT || \
     ANALOG_SUPPORT || \
     BH1750_SUPPORT || \
+    BMP180_SUPPORT || \
     BMX280_SUPPORT || \
     CSE7766_SUPPORT || \
     DALLAS_SUPPORT || \
@@ -748,11 +885,15 @@
     SENSEAIR_SUPPORT || \
     PMSX003_SUPPORT || \
     PZEM004T_SUPPORT || \
+    PULSEMETER_SUPPORT || \
     SHT3X_I2C_SUPPORT || \
     SI7021_SUPPORT || \
     SONAR_SUPPORT || \
     TMP3X_SUPPORT || \
-    V9261F_SUPPORT \
+    V9261F_SUPPORT || \
+    VEML6075_SUPPORT || \
+    VL53L1X_SUPPORT || \
+    EZOPH_SUPPORT \
 )
 #endif
 
@@ -806,6 +947,10 @@
     #include "../sensors/BH1750Sensor.h"
 #endif
 
+#if BMP180_SUPPORT
+    #include "../sensors/BMP180Sensor.h"
+#endif
+
 #if BMX280_SUPPORT
     #include "../sensors/BMX280Sensor.h"
 #endif
@@ -846,6 +991,10 @@
     #include "../sensors/EventSensor.h"
 #endif
 
+#if EZOPH_SUPPORT
+    #include "../sensors/EZOPHSensor.h"
+#endif
+
 #if GEIGER_SUPPORT
     #include "../sensors/GeigerSensor.h"
 #endif
@@ -857,6 +1006,10 @@
 #if HLW8012_SUPPORT
     #include "../sensors/HLW8012Sensor.h"
 #endif
+
+#if MAX6675_SUPPORT
+    #include "../sensors/MAX6675.h"
+#endif 
 
 #if MHZ19_SUPPORT
     #include "../sensors/MHZ19Sensor.h"
@@ -886,6 +1039,10 @@
     #include "../sensors/PMSX003Sensor.h"
 #endif
 
+#if PULSEMETER_SUPPORT
+    #include "../sensors/PulseMeterSensor.h"
+#endif
+
 #if PZEM004T_SUPPORT
     #include "../sensors/PZEM004TSensor.h"
 #endif
@@ -908,6 +1065,14 @@
 
 #if V9261F_SUPPORT
     #include "../sensors/V9261FSensor.h"
+#endif
+
+#if VEML6075_SUPPORT
+    #include "../sensors/VEML6075Sensor.h"
+#endif
+
+#if VL53L1X_SUPPORT
+    #include "../sensors/VL53L1XSensor.h"
 #endif
 
 #endif // SENSOR_SUPPORT
