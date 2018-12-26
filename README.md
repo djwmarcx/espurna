@@ -3,7 +3,7 @@
 ESPurna ("spark" in Catalan) is a custom firmware for ESP8285/ESP8266 based smart switches, lights and sensors.
 It uses the Arduino Core for ESP8266 framework and a number of 3rd party libraries.
 
-[![version](https://img.shields.io/badge/version-1.13.3-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-1.13.4-dev-brightgreen.svg)](CHANGELOG.md)
 [![branch](https://img.shields.io/badge/branch-dev-orange.svg)](https://github.com/xoseperez/espurna/tree/dev/)
 [![license](https://img.shields.io/github/license/xoseperez/espurna.svg)](LICENSE)
 [![travis](https://travis-ci.org/xoseperez/espurna.svg?branch=dev)](https://travis-ci.org/xoseperez/espurna)
@@ -15,6 +15,10 @@ It uses the Arduino Core for ESP8266 framework and a number of 3rd party librari
 [![twitter](https://img.shields.io/twitter/follow/xoseperez.svg?style=social)](https://twitter.com/intent/follow?screen_name=xoseperez)
 
 ---
+
+## Collaborators
+
+Since last November, Max Prokhorov (@mcspr) is also working actively with ESPurna as a collaborator of the project. 
 
 ## Contributors
 
@@ -234,8 +238,10 @@ Here is the list of supported hardware. For more information please refer to the
 |**Electrodragon WiFi IOT**|**OpenEnergyMonitor WiFi MQTT Relay / Thermostat**||
 |![Itead S20](images/devices/itead-s20.jpg)|![Itead S20](images/devices/itead-s26.jpg)|![Neo Coolcam NAS WR01W](images/devices/neo-coolcam-wifi.jpg)|
 |**Itead S20**|**Itead S26**|**Neo Coolcam NAS WR01W**|
-|![Schuko Wifi Plug](images/devices/schuko-wifi-plug.jpg)|![KMC 70011](images/devices/kmc-70011.jpg)|![Xenon SM-PW702U](images/devices/xenon-sm-pw702u.jpg)|
-|**Schuko Wifi Plug**|**KMC 70011**|**Xenon SM-PW702U**|
+|![Schuko Wifi Plug](images/devices/schuko-wifi-plug.jpg)|![Schuko Wifi Plug V2](images/devices/schuko-wifi-plug-v2.jpg)|
+|**Schuko Wifi Plug**|**Schuko Wifi Plug V2**|
+|![KMC 70011](images/devices/kmc-70011.jpg)|![Xenon SM-PW702U](images/devices/xenon-sm-pw702u.jpg)||
+**KMC 70011**|**Xenon SM-PW702U**||
 |![Maxcio W-US002S](images/devices/maxcio-w-us002s.jpg)|![HEYGO HY02](images/devices/heygo-hy02.jpg)|![YiDian XS-SSA05](images/devices/yidian-xs-ssa05.jpg)|
 |**Maxcio W-US002S**|**HEYGO HY02**|**YiDian XS-SSA05**|
 |![WiOn 50055](images/devices/wion-50055.jpg)|![LINGAN SWA1](images/devices/lingan-swa1.jpg)|![HomeCube 16A](images/devices/homecube-16a.jpg)|
@@ -280,7 +286,7 @@ Here is the list of supported hardware. For more information please refer to the
 |**Tonbux Mosquito Killer**|**Itead Sonoff IFAN02**|||
 
 **Other supported boards (beta):**
-KMC 4 Outlet, Gosund WS1, Smart Dual Plug, MakerFocus Intelligent Module LM33 for Lamps
+KMC 4 Outlet, Gosund WS1, MakerFocus Intelligent Module LM33 for Lamps
 
 ## License
 

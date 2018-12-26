@@ -36,6 +36,7 @@
 //#define ITEAD_SONOFF_T1_2CH
 //#define ITEAD_SONOFF_T1_3CH
 //#define ITEAD_SONOFF_S31
+//#define ORVIBO_B25
 //#define YJZK_SWITCH_2CH
 //#define ELECTRODRAGON_WIFI_IOT
 //#define WORKCHOICE_ECOPLUG
@@ -66,6 +67,7 @@
 //#define WEMOS_D1_TARPUNA_SHIELD
 //#define GIZWITS_WITTY_CLOUD
 //#define EUROMATE_WIFI_STECKER_SCHUKO
+//#define EUROMATE_WIFI_STECKER_SCHUKO_V2
 //#define TONBUX_POWERSTRIP02
 //#define LINGAN_SWA1
 //#define HEYGO_HY02
@@ -101,6 +103,13 @@
 //#define PHYX_ESP12_RGB
 //#define IWOOLE_LED_TABLE_LAMP
 //#define EXS_WIFI_RELAY_V50
+//#define TECKIN_SP22_V14
+//#define LOMBEX_LUX_NOVA2_TUNABLE_WHITE
+//#define LOMBEX_LUX_NOVA2_WHITE_COLOR
+//#define MAGICHOME_ZJ_WFMN_A_11
+//#define MAGICHOME_ZJ_WFMN_B_11
+//#define GBLIFE_RGBW_SOCKET
+//#define SMARTLIFE_MINI_SMART_SOCKET
 
 //--------------------------------------------------------------------------------
 // Features (values below are non-default values)
@@ -147,6 +156,7 @@
 //#define AM2320_SUPPORT         1
 //#define ANALOG_SUPPORT         1
 //#define BH1750_SUPPORT         1
+//#define BMP180_SUPPORT         1
 //#define BMX280_SUPPORT         1
 //#define CSE7766_SUPPORT        1
 //#define DALLAS_SUPPORT         1
@@ -165,6 +175,7 @@
 //#define MICS5525_SUPPORT       1
 //#define NTC_SUPPORT            1
 //#define PMSX003_SUPPORT        1
+//#define PULSEMETER_SUPPORT     1
 //#define PZEM004T_SUPPORT       1
 //#define SDS011_SUPPORT         1
 //#define SENSEAIR_SUPPORT       1
@@ -173,3 +184,5 @@
 //#define SONAR_SUPPORT          1
 //#define TMP3X_SUPPORT          1
 //#define V9261F_SUPPORT         1
+//#define VL53L1X_SUPPORT        1
+//#define EZOPH_SUPPORT          1

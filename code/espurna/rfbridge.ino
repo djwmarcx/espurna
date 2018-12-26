@@ -19,6 +19,8 @@ Copyright (C) 2017-2018 by Xose Pérez <xose dot perez at gmail dot com>
 // DEFINITIONS
 // -----------------------------------------------------------------------------
 
+// EFM8 Protocol
+
 #define RF_MESSAGE_SIZE         9
 #define RF_MAX_MESSAGE_SIZE     (112+4)
 #define RF_CODE_START           0xAA
@@ -36,6 +38,10 @@ Copyright (C) 2017-2018 by Xose Pérez <xose dot perez at gmail dot com>
 #define RF_CODE_LEARN_OK_NEW    0xAB
 #define RF_CODE_RFOUT_BUCKET    0xB0
 #define RF_CODE_STOP            0x55
+
+// Settings
+
+#define RF_MAX_KEY_LENGTH       (9)
 
 // -----------------------------------------------------------------------------
 // GLOBALS TO THE MODULE
@@ -58,6 +64,10 @@ bool _rfb_ticker_active = false;
 #if RFB_DIRECT
     RCSwitch * _rfModem;
     bool _learning = false;
+#endif
+
+#if WEB_SUPPORT
+    Ticker _rfb_sendcodes;
 #endif
 
 // -----------------------------------------------------------------------------
@@ -89,6 +99,20 @@ static bool _rfbToChar(byte * in, char * out, int n = RF_MESSAGE_SIZE) {
     return true;
 }
 
+#if WEB_SUPPORT
+
+void _rfbWebSocketSendCode(unsigned char id, bool status, const char * code) {
+    char wsb[192]; // (32 * 5): 46 bytes for json , 116 bytes raw code, reserve
+    snprintf_P(wsb, sizeof(wsb), PSTR("{\"rfb\":[{\"id\": %d, \"status\": %d, \"data\": \"%s\"}]}"), id, status ? 1 : 0, code);
+    wsSend(wsb);
+}
+
+void _rfbWebSocketSendCodes() {
+    for (unsigned char id=0; id<relayCount(); id++) {
+        _rfbWebSocketSendCode(id, true, rfbRetrieve(id, true).c_str());
+        _rfbWebSocketSendCode(id, false, rfbRetrieve(id, false).c_str());
+    }
+}
 
 void _rfbWebSocketOnSend(JsonObject& root) {
     root["rfbVisible"] = 1;
@@ -96,15 +120,7 @@ void _rfbWebSocketOnSend(JsonObject& root) {
     #if RF_RAW_SUPPORT
         root["rfbrawVisible"] = 1;
     #endif
-    JsonArray& rfb = root.createNestedArray("rfb");
-    for (byte id=0; id<relayCount(); id++) {
-        for (byte status=0; status<2; status++) {
-            JsonObject& node = rfb.createNestedObject();
-            node["id"] = id;
-            node["status"] = status;
-            node["data"] = rfbRetrieve(id, status == 1);
-        }
-    }
+    _rfb_sendcodes.once_ms(1000, _rfbWebSocketSendCodes);
 }
 
 void _rfbWebSocketOnAction(uint32_t client_id, const char * action, JsonObject& data) {
@@ -112,6 +128,8 @@ void _rfbWebSocketOnAction(uint32_t client_id, const char * action, JsonObject& 
     if (strcmp(action, "rfbforget") == 0) rfbForget(data["id"], data["status"]);
     if (strcmp(action, "rfbsend") == 0) rfbStore(data["id"], data["status"], data["data"].as<const char*>());
 }
+
+#endif // WEB_SUPPORT
 
 void _rfbAck() {
     #if not RFB_DIRECT
@@ -313,9 +331,7 @@ void _rfbDecode() {
 
         // Websocket update
         #if WEB_SUPPORT
-            char wsb[100];
-            snprintf_P(wsb, sizeof(wsb), PSTR("{\"rfb\":[{\"id\": %d, \"status\": %d, \"data\": \"%s\"}]}"), _learnId, _learnStatus ? 1 : 0, buffer);
-            wsSend(wsb);
+            _rfbWebSocketSendCode(_learnId, _learnStatus, buffer);
         #endif
 
     }
@@ -517,19 +533,69 @@ void _rfbMqttCallback(unsigned int type, const char * topic, const char * payloa
 }
 #endif
 
+#if TERMINAL_SUPPORT
+
+void _rfbInitCommands() {
+
+    settingsRegisterCommand(F("LEARN"), [](Embedis* e) {
+
+        if (e->argc < 3) {
+            DEBUG_MSG_P(PSTR("-ERROR: Wrong arguments\n"));
+            return;
+        }
+        
+        int id = String(e->argv[1]).toInt();
+        if (id >= relayCount()) {
+            DEBUG_MSG_P(PSTR("-ERROR: Wrong relayID (%d)\n"), id);
+            return;
+        }
+
+        int status = String(e->argv[2]).toInt();
+
+        rfbLearn(id, status == 1);
+
+        DEBUG_MSG_P(PSTR("+OK\n"));
+
+    });
+
+    settingsRegisterCommand(F("FORGET"), [](Embedis* e) {
+
+        if (e->argc < 3) {
+            DEBUG_MSG_P(PSTR("-ERROR: Wrong arguments\n"));
+            return;
+        }
+        
+        int id = String(e->argv[1]).toInt();
+        if (id >= relayCount()) {
+            DEBUG_MSG_P(PSTR("-ERROR: Wrong relayID (%d)\n"), id);
+            return;
+        }
+
+        int status = String(e->argv[2]).toInt();
+
+        rfbForget(id, status == 1);
+
+        DEBUG_MSG_P(PSTR("+OK\n"));
+
+    });
+
+}
+
+#endif // TERMINAL_SUPPORT
+
 // -----------------------------------------------------------------------------
 // PUBLIC
 // -----------------------------------------------------------------------------
 
 void rfbStore(unsigned char id, bool status, const char * code) {
     DEBUG_MSG_P(PSTR("[RFBRIDGE] Storing %d-%s => '%s'\n"), id, status ? "ON" : "OFF", code);
-    char key[8] = {0};
+    char key[RF_MAX_KEY_LENGTH] = {0};
     snprintf_P(key, sizeof(key), PSTR("rfb%s%d"), status ? "ON" : "OFF", id);
     setSetting(key, code);
 }
 
 String rfbRetrieve(unsigned char id, bool status) {
-    char key[8] = {0};
+    char key[RF_MAX_KEY_LENGTH] = {0};
     snprintf_P(key, sizeof(key), PSTR("rfb%s%d"), status ? "ON" : "OFF", id);
     return getSetting(key);
 }
@@ -586,7 +652,7 @@ void rfbLearn(unsigned char id, bool status) {
 
 void rfbForget(unsigned char id, bool status) {
 
-    char key[8] = {0};
+    char key[RF_MAX_KEY_LENGTH] = {0};
     snprintf_P(key, sizeof(key), PSTR("rfb%s%d"), status ? "ON" : "OFF", id);
     delSetting(key);
 
@@ -612,6 +678,10 @@ void rfbSetup() {
     #if WEB_SUPPORT
         wsOnSendRegister(_rfbWebSocketOnSend);
         wsOnActionRegister(_rfbWebSocketOnAction);
+    #endif
+
+    #if TERMINAL_SUPPORT
+        _rfbInitCommands();
     #endif
 
     #if RFB_DIRECT
