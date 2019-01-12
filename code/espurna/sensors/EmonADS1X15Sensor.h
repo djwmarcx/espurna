@@ -287,6 +287,7 @@ class EmonADS1X15Sensor : public EmonSensor {
             uint16_t config = 0;
             config |= _gain;                                // Set PGA/voltage range (0x0200)
             config |= ADS1X15_REG_CONFIG_DR_MASK;           // Always at max speed (0x00E0)
+            config |= ADS1X15_REG_CONFIG_MUX_DIFF_0_1;
             //config |= ADS1X15_REG_CONFIG_CMODE_TRAD;        // Traditional comparator (default val) (0x0000)
             //config |= ADS1X15_REG_CONFIG_CPOL_ACTVLOW;      // Alert/Rdy active low   (default val) (0x0000)
             //config |= ADS1X15_REG_CONFIG_CLAT_NONLAT;       // Non-latching (default val) (0x0000)
@@ -334,7 +335,7 @@ class EmonADS1X15Sensor : public EmonSensor {
 
         unsigned char _type = ADS1X15_CHIP_ADS1115;
         unsigned char _mask = 0x0F;
-        unsigned int _gain = ADS1X15_REG_CONFIG_PGA_4_096V;
+        unsigned int _gain = ADS1X15_REG_CONFIG_PGA_2_048V;
         unsigned char _ports;
 
 
