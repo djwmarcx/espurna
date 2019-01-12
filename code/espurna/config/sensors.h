@@ -320,10 +320,18 @@
 #define EMON_ADS1X15_SUPPORT            0       // Do not build support by default
 #endif
 
+#ifndef EMON_ADS1X15_I2C_ADDRESS
 #define EMON_ADS1X15_I2C_ADDRESS        0x00    // 0x00 means auto
+#endif
+#ifndef EMON_ADS1X15_TYPE
 #define EMON_ADS1X15_TYPE               ADS1X15_CHIP_ADS1115
+#endif
+#ifndef EMON_ADS1X15_GAIN
 #define EMON_ADS1X15_GAIN               ADS1X15_REG_CONFIG_PGA_4_096V
+#endif
+#ifndef EMON_ADS1X15_MASK
 #define EMON_ADS1X15_MASK               0x0F    // A0=1 A1=2 A2=4 A3=8
+#endif
 
 //------------------------------------------------------------------------------
 // Energy Monitor based on interval analog GPIO
