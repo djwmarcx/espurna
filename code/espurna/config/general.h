@@ -21,7 +21,7 @@
 #endif
 
 #ifndef LOOP_DELAY_TIME
-#define LOOP_DELAY_TIME         10              // Delay for this millis in the main loop [0-250]
+#define LOOP_DELAY_TIME         1               // Delay for this millis in the main loop [0-250] (see https://github.com/xoseperez/espurna/issues/1541)
 #endif
 
 //------------------------------------------------------------------------------
@@ -169,6 +169,7 @@
 #define HEARTBEAT_NONE              0           // Never send heartbeat
 #define HEARTBEAT_ONCE              1           // Send it only once upon MQTT connection
 #define HEARTBEAT_REPEAT            2           // Send it upon MQTT connection and every HEARTBEAT_INTERVAL
+#define HEARTBEAT_REPEAT_STATUS     3           // Send it upon MQTT connection and every HEARTBEAT_INTERVAL only STATUS report
 
 // Backwards compatibility check
 #if defined(HEARTBEAT_ENABLED) && (HEARTBEAT_ENABLED == 0)
@@ -180,7 +181,7 @@
 #endif
 
 #ifndef HEARTBEAT_INTERVAL
-#define HEARTBEAT_INTERVAL          300000      // Interval between heartbeat messages (in ms)
+#define HEARTBEAT_INTERVAL          300         // Interval between heartbeat messages (in sec)
 #endif
 
 #define UPTIME_OVERFLOW             4294967295  // Uptime overflow value
@@ -232,6 +233,10 @@
 
 #ifndef HEARTBEAT_REPORT_HOSTNAME
 #define HEARTBEAT_REPORT_HOSTNAME   1
+#endif
+
+#ifndef HEARTBEAT_REPORT_DESCRIPTION
+#define HEARTBEAT_REPORT_DESCRIPTION 1
 #endif
 
 #ifndef HEARTBEAT_REPORT_APP
@@ -801,6 +806,7 @@
 #define MQTT_TOPIC_APP              "app"
 #define MQTT_TOPIC_INTERVAL         "interval"
 #define MQTT_TOPIC_HOSTNAME         "host"
+#define MQTT_TOPIC_DESCRIPTION      "desc"
 #define MQTT_TOPIC_TIME             "time"
 #define MQTT_TOPIC_RFOUT            "rfout"
 #define MQTT_TOPIC_RFIN             "rfin"

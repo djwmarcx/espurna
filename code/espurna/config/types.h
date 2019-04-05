@@ -48,6 +48,9 @@
 #define BUTTON_MODE_FACTORY         7
 #define BUTTON_MODE_WPS             8
 #define BUTTON_MODE_SMART_CONFIG    9
+#define BUTTON_MODE_DIM_UP          10
+#define BUTTON_MODE_DIM_DOWN        11
+
 
 // Needed for ESP8285 boards under Windows using PlatformIO (?)
 #ifndef BUTTON_PUSHBUTTON
@@ -92,6 +95,10 @@
 #define RELAY_PROVIDER_LIGHT        2
 #define RELAY_PROVIDER_RFBRIDGE     3
 #define RELAY_PROVIDER_STM          4
+
+#define RELAY_GROUP_SYNC_NORMAL      0
+#define RELAY_GROUP_SYNC_INVERSE     1
+#define RELAY_GROUP_SYNC_RECEIVEONLY 2
 
 //------------------------------------------------------------------------------
 // UDP SYSLOG
