@@ -2,7 +2,7 @@
 
 SYSTEM MODULE
 
-Copyright (C) 2018 by Xose Pérez <xose dot perez at gmail dot com>
+Copyright (C) 2019 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
@@ -11,7 +11,10 @@ Copyright (C) 2018 by Xose Pérez <xose dot perez at gmail dot com>
 // -----------------------------------------------------------------------------
 
 unsigned long _loop_delay = 0;
+
 bool _system_send_heartbeat = false;
+unsigned char _heartbeat_mode = HEARTBEAT_MODE;
+unsigned long _heartbeat_interval = HEARTBEAT_INTERVAL;
 
 // Calculated load average 0 to 100;
 unsigned short int _load_average = 100;
@@ -66,14 +69,28 @@ void systemSendHeartbeat() {
     _system_send_heartbeat = true;
 }
 
+bool systemGetHeartbeat() {
+    return _system_send_heartbeat;
+}
+
 unsigned long systemLoopDelay() {
     return _loop_delay;
 }
 
-
 unsigned long systemLoadAverage() {
     return _load_average;
 }
+
+void _systemSetupHeartbeat() {
+    _heartbeat_mode = getSetting("hbMode", HEARTBEAT_MODE).toInt();
+    _heartbeat_interval = getSetting("hbInterval", HEARTBEAT_INTERVAL).toInt();
+}
+
+#if WEB_SUPPORT
+    bool _systemWebSocketOnReceive(const char * key, JsonVariant& value) {
+        return (strncmp(key, "hb", 2) == 0);
+    }
+#endif
 
 void systemLoop() {
 
@@ -97,19 +114,21 @@ void systemLoop() {
     // Heartbeat
     // -------------------------------------------------------------------------
 
-    #if HEARTBEAT_MODE == HEARTBEAT_ONCE
-        if (_system_send_heartbeat) {
-            _system_send_heartbeat = false;
-            heartbeat();
-        }
-    #elif HEARTBEAT_MODE == HEARTBEAT_REPEAT
+    if (_system_send_heartbeat && _heartbeat_mode == HEARTBEAT_ONCE) {
+        heartbeat();
+        _system_send_heartbeat = false;
+    } else if (_heartbeat_mode == HEARTBEAT_REPEAT || _heartbeat_mode == HEARTBEAT_REPEAT_STATUS) {
         static unsigned long last_hbeat = 0;
-        if (_system_send_heartbeat || (last_hbeat == 0) || (millis() - last_hbeat > HEARTBEAT_INTERVAL)) {
-            _system_send_heartbeat = false;
+        #if NTP_SUPPORT
+            if ((_system_send_heartbeat && ntpSynced()) || (millis() - last_hbeat > _heartbeat_interval * 1000)) {
+        #else
+            if (_system_send_heartbeat || (millis() - last_hbeat > _heartbeat_interval * 1000)) {
+        #endif
             last_hbeat = millis();
             heartbeat();
+           _system_send_heartbeat = false;
         }
-    #endif // HEARTBEAT_MODE == HEARTBEAT_REPEAT
+    }
 
     // -------------------------------------------------------------------------
     // Load Average calculation
@@ -137,8 +156,7 @@ void systemLoop() {
     // -------------------------------------------------------------------------
     // Power saving delay
     // -------------------------------------------------------------------------
-
-    delay(_loop_delay);
+    if (_loop_delay) delay(_loop_delay);
 
 }
 
@@ -152,7 +170,7 @@ void _systemSetupSpecificHardware() {
 
     // These devices use the hardware UART
     // to communicate to secondary microcontrollers
-    #if defined(ITEAD_SONOFF_RFBRIDGE) || defined(ITEAD_SONOFF_DUAL) || (RELAY_PROVIDER == RELAY_PROVIDER_STM)
+    #if defined(ITEAD_SONOFF_RFBRIDGE) || (RELAY_PROVIDER == RELAY_PROVIDER_DUAL) || (RELAY_PROVIDER == RELAY_PROVIDER_STM)
         Serial.begin(SERIAL_BAUDRATE);
     #endif
 
@@ -169,6 +187,10 @@ void systemSetup() {
         systemCheck(false);
     #endif
 
+    #if WEB_SUPPORT
+        wsOnReceiveRegister(_systemWebSocketOnReceive);
+    #endif
+
     // Init device-specific hardware
     _systemSetupSpecificHardware();
 
@@ -178,5 +200,8 @@ void systemSetup() {
 
     // Register Loop
     espurnaRegisterLoop(systemLoop);
+
+    // Cache Heartbeat values
+    _systemSetupHeartbeat();
 
 }
