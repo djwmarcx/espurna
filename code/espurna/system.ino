@@ -2,7 +2,7 @@
 
 SYSTEM MODULE
 
-Copyright (C) 2018 by Xose Pérez <xose dot perez at gmail dot com>
+Copyright (C) 2019 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
@@ -170,7 +170,7 @@ void _systemSetupSpecificHardware() {
 
     // These devices use the hardware UART
     // to communicate to secondary microcontrollers
-    #if defined(ITEAD_SONOFF_RFBRIDGE) || defined(ITEAD_SONOFF_DUAL) || (RELAY_PROVIDER == RELAY_PROVIDER_STM)
+    #if defined(ITEAD_SONOFF_RFBRIDGE) || (RELAY_PROVIDER == RELAY_PROVIDER_DUAL) || (RELAY_PROVIDER == RELAY_PROVIDER_STM)
         Serial.begin(SERIAL_BAUDRATE);
     #endif
 
