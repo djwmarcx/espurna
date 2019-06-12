@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 std::vector<void (*)()> _loop_callbacks;
 std::vector<void (*)()> _reload_callbacks;
 
+bool _reload_config = false;
 unsigned long _loop_delay = 0;
 
 // -----------------------------------------------------------------------------
@@ -40,6 +41,10 @@ void espurnaRegisterReload(void (*callback)()) {
 }
 
 void espurnaReload() {
+    _reload_config = true;
+}
+
+void _espurnaReload() {
     for (unsigned char i = 0; i < _reload_callbacks.size(); i++) {
         (_reload_callbacks[i])();
     }
@@ -66,6 +71,9 @@ void setup() {
     #if DEBUG_SUPPORT
         debugSetup();
     #endif
+
+    // Init RTCMEM
+    rtcmemSetup();
 
     // Init EEPROM
     eepromSetup();
@@ -159,7 +167,7 @@ void setup() {
     #if I2C_SUPPORT
         i2cSetup();
     #endif
-    #if defined(ITEAD_SONOFF_RFBRIDGE) || RF_SUPPORT
+    #if RF_SUPPORT
         rfbSetup();
     #endif
     #if ALEXA_SUPPORT
@@ -224,6 +232,12 @@ void setup() {
 }
 
 void loop() {
+
+    // Reload config before running any callbacks
+    if (_reload_config) {
+        _espurnaReload();
+        _reload_config = false;
+    }
 
     // Call registered loop callbacks
     for (unsigned char i = 0; i < _loop_callbacks.size(); i++) {

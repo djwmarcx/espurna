@@ -7,9 +7,6 @@ Copyright (C) 2017-2019 by Xose Pérez <xose dot perez at gmail dot com>
 */
 
 #include <Ticker.h>
-Ticker _defer_reset;
-
-uint8_t _reset_reason = 0;
 
 String getIdentifier() {
     char buffer[20];
@@ -101,34 +98,18 @@ String getEspurnaWebUI() {
 }
 
 String buildTime() {
-
-    const char time_now[] = __TIME__;   // hh:mm:ss
-    unsigned int hour = atoi(&time_now[0]);
-    unsigned int minute = atoi(&time_now[3]);
-    unsigned int second = atoi(&time_now[6]);
-
-    const char date_now[] = __DATE__;   // Mmm dd yyyy
-    const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-    unsigned int month = 0;
-    for ( int i = 0; i < 12; i++ ) {
-        if (strncmp(date_now, months[i], 3) == 0 ) {
-            month = i + 1;
-            break;
-        }
-    }
-    unsigned int day = atoi(&date_now[3]);
-    unsigned int year = atoi(&date_now[7]);
-
-    char buffer[20];
-    snprintf_P(
-        buffer, sizeof(buffer), PSTR("%04d-%02d-%02d %02d:%02d:%02d"),
-        year, month, day, hour, minute, second
-    );
-
-    return String(buffer);
-
+    #if NTP_SUPPORT
+        return ntpDateTime(__UNIX_TIMESTAMP__);
+    #else
+        char buffer[20];
+        snprintf_P(
+            buffer, sizeof(buffer), PSTR("%04d-%02d-%02d %02d:%02d:%02d"),
+            __TIME_YEAR__, __TIME_MONTH__, __TIME_DAY__,
+            __TIME_HOUR__, __TIME_MINUTE__, __TIME_SECOND__
+        );
+        return String(buffer);
+    #endif
 }
-
 
 unsigned long getUptime() {
 
@@ -334,6 +315,15 @@ void heartbeat() {
 
         if (hb_cfg & Heartbeat::Rssi)
             idbSend(MQTT_TOPIC_RSSI, String(WiFi.RSSI()).c_str());
+
+        if ((hb_cfg & Heartbeat::Vcc) && (ADC_MODE_VALUE == ADC_VCC))
+            idbSend(MQTT_TOPIC_VCC, String(ESP.getVcc()).c_str());
+                    
+        if (hb_cfg & Heartbeat::Loadavg)
+            idbSend(MQTT_TOPIC_LOADAVG, String(systemLoadAverage()).c_str());
+
+        if (hb_cfg & Heartbeat::Ssid)
+            idbSend(MQTT_TOPIC_SSID, WiFi.SSID().c_str());
     #endif
 
 }
@@ -416,6 +406,7 @@ void info() {
     DEBUG_MSG_P(PSTR("[MAIN] SDK version: %s\n"), ESP.getSdkVersion());
     DEBUG_MSG_P(PSTR("[MAIN] Core version: %s\n"), getCoreVersion().c_str());
     DEBUG_MSG_P(PSTR("[MAIN] Core revision: %s\n"), getCoreRevision().c_str());
+    DEBUG_MSG_P(PSTR("[MAIN] Build time: %lu\n"), __UNIX_TIMESTAMP__);
     DEBUG_MSG_P(PSTR("\n"));
 
     // -------------------------------------------------------------------------
@@ -473,7 +464,7 @@ void info() {
 
     DEBUG_MSG_P(PSTR("[MAIN] Boot version: %d\n"), ESP.getBootVersion());
     DEBUG_MSG_P(PSTR("[MAIN] Boot mode: %d\n"), ESP.getBootMode());
-    unsigned char reason = resetReason();
+    unsigned char reason = customResetReason();
     if (reason > 0) {
         char buffer[32];
         strcpy_P(buffer, custom_reset_string[reason-1]);
@@ -571,34 +562,6 @@ bool sslFingerPrintChar(const char * fingerprint, char * destination) {
 // Reset
 // -----------------------------------------------------------------------------
 
-unsigned char resetReason() {
-    static unsigned char status = 255;
-    if (status == 255) {
-        status = EEPROMr.read(EEPROM_CUSTOM_RESET);
-        if (status > 0) resetReason(0);
-        if (status > CUSTOM_RESET_MAX) status = 0;
-    }
-    return status;
-}
-
-void resetReason(unsigned char reason) {
-    _reset_reason = reason;
-    EEPROMr.write(EEPROM_CUSTOM_RESET, reason);
-    eepromCommit();
-}
-
-void reset() {
-    ESP.restart();
-}
-
-void deferredReset(unsigned long delay, unsigned char reason) {
-    _defer_reset.once_ms(delay, resetReason, reason);
-}
-
-bool checkNeedsReset() {
-    return _reset_reason > 0;
-}
-
 // Use fixed method for Core 2.3.0, because it erases only 2 out of 4 SDK-reserved sectors
 // Fixed since 2.4.0, see: esp8266/core/esp8266/Esp.cpp: ESP::eraseConfig()
 bool eraseSDKConfig() {
@@ -618,6 +581,8 @@ bool eraseSDKConfig() {
     #endif
 }
 
+// -----------------------------------------------------------------------------
+// Helper functions
 // -----------------------------------------------------------------------------
 
 char * ltrim(char * s) {

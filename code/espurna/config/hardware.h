@@ -702,19 +702,11 @@
     #define LED1_PIN            13
     #define LED1_PIN_INVERSE    1
 
-    // RFB Direct hack thanks to @wildwiz
-    // https://github.com/xoseperez/espurna/wiki/Hardware-Itead-Sonoff-RF-Bridge---Direct-Hack
-    #ifndef RFB_DIRECT
-    #define RFB_DIRECT          0
-    #endif
+    #define RF_SUPPORT          1
 
-    #ifndef RFB_RX_PIN
-    #define RFB_RX_PIN          4   // GPIO for RX when RFB_DIRECT
-    #endif
-
-    #ifndef RFB_TX_PIN
-    #define RFB_TX_PIN          5   // GPIO for TX when RFB_DIRECT
-    #endif
+    // Only used when RFB_DIRECT=1
+    #define RFB_RX_PIN          4
+    #define RFB_TX_PIN          5
 
     // When using un-modified harware, ESPurna communicates with the secondary
     // MCU EFM8BB1 via UART at 19200 bps so we need to change the speed of
@@ -1294,7 +1286,8 @@
 
     // RF
     #define RF_SUPPORT          1
-    #define RF_PIN              4
+    #define RFB_DIRECT          1
+    #define RFB_RX_PIN          4
 
 // -----------------------------------------------------------------------------
 // HUACANXING H801 & H802
@@ -2078,6 +2071,9 @@
     #define HLW8012_CURRENT_R               0.002            // Current resistor
     #define HLW8012_VOLTAGE_R_UP            ( 2 * 1000000 )  // Upstream voltage resistor
 
+    // LED1 on RX pin
+    #define DEBUG_SERIAL_SUPPORT            1
+
 // -----------------------------------------------------------------------------
 // Maxcio W-DE004
 // -----------------------------------------------------------------------------
@@ -2430,10 +2426,9 @@
     #endif
     #define DALLAS_PIN          2
 
-    #ifndef RF_SUPPORT
     #define RF_SUPPORT          1
-    #endif
-    #define RF_PIN              14
+    #define RFB_DIRECT          1
+    #define RFB_RX_PIN          14
 
     #ifndef DIGITAL_SUPPORT
     #define DIGITAL_SUPPORT      1
@@ -2497,11 +2492,11 @@
     #define LED1_PIN                1
     #define LED1_PIN_INVERSE        1
 
-    // -----------------------------------------------------------------------------
-    // Allnet 4duino ESP8266-UP-Relais
-    // http://www.allnet.de/de/allnet-brand/produkte/neuheiten/p/allnet-4duino-iot-wlan-relais-unterputz-esp8266-up-relais/
-    // https://shop.allnet.de/fileadmin/transfer/products/148814.pdf
-    // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Allnet 4duino ESP8266-UP-Relais
+// http://www.allnet.de/de/allnet-brand/produkte/neuheiten/p/allnet-4duino-iot-wlan-relais-unterputz-esp8266-up-relais/
+// https://shop.allnet.de/fileadmin/transfer/products/148814.pdf
+// -----------------------------------------------------------------------------
 
 #elif defined(ALLNET_4DUINO_IOT_WLAN_RELAIS)
 
@@ -2807,6 +2802,9 @@
     #define HLW8012_POWER_RATIO         3414290
     #define HLW8012_INTERRUPT_ON        FALLING
 
+    // BUTTON1 and LED1 are using Serial pins
+    #define DEBUG_SERIAL_SUPPORT        0
+
 // -----------------------------------------------------------------------------
 // Teckin SP22 v1.4 - v1.6
 // -----------------------------------------------------------------------------
@@ -2848,6 +2846,9 @@
     #define HLW8012_POWER_RATIO         2533110
     #define HLW8012_INTERRUPT_ON        FALLING
 
+    // BUTTON1 and LED1 are using Serial pins
+    #define DEBUG_SERIAL_SUPPORT        0
+
 // -----------------------------------------------------------------------------
 // Several boards under different names uing a power chip labelled BL0937 or HJL-01
 // Also model number KS-602S
@@ -2871,6 +2872,9 @@
     // LEDs
     #define LED1_PIN            1
     #define LED1_PIN_INVERSE    1
+
+    // LED1 is using TX pin
+    #define DEBUG_SERIAL_SUPPORT 0
 
 // ----------------------------------------------------------------------------------------
 //  Homecube 16A is similar but some pins differ and it also has RGB LEDs
@@ -3449,7 +3453,7 @@
 // Teckin SP20
 // -----------------------------------------------------------------------------
 
- #elif defined(TECKIN_SP20)
+#elif defined(TECKIN_SP20)
 
      // Info
     #define MANUFACTURER                "TECKIN"
@@ -3513,6 +3517,65 @@
     #define LED2_PIN            5  // 5 red led
     #define LED2_MODE           LED_MODE_RELAY
     #define LED2_PIN_INVERSE    1
+
+// -----------------------------------------------------------------------------
+// PSH
+// -----------------------------------------------------------------------------
+
+#elif defined(PSH_WIFI_PLUG)
+ 
+    // Info
+    #define MANUFACTURER        "PSH"
+    #define DEVICE              "WIFI_PLUG"
+ 
+    // Relays
+    #define RELAY1_PIN          2
+    #define RELAY1_TYPE         RELAY_TYPE_NORMAL
+ 
+    // LEDs
+    #define LED1_PIN            0
+    #define LED1_PIN_INVERSE    0
+ 
+#elif defined(PSH_RGBW_CONTROLLER)
+ 
+    // Info
+    #define MANUFACTURER        "PSH"
+    #define DEVICE              "RGBW_CONTROLLER"
+    #define RELAY_PROVIDER      RELAY_PROVIDER_LIGHT
+    #define LIGHT_PROVIDER      LIGHT_PROVIDER_DIMMER
+    #define DUMMY_RELAY_COUNT   1
+ 
+    // LEDs
+    #define LED1_PIN            13
+    #define LED1_PIN_INVERSE    1
+ 
+    // Light
+    #define LIGHT_CHANNELS      4
+    #define LIGHT_CH1_PIN       5      // RED
+    #define LIGHT_CH2_PIN       4      // GREEN
+    #define LIGHT_CH3_PIN       12     // BLUE
+    #define LIGHT_CH4_PIN       14     // WHITE1
+    #define LIGHT_CH1_INVERSE   0
+    #define LIGHT_CH2_INVERSE   0
+    #define LIGHT_CH3_INVERSE   0
+    #define LIGHT_CH4_INVERSE   0
+ 
+#elif defined(PSH_WIFI_SENSOR)
+ 
+    // Info
+    #define MANUFACTURER        "PSH"
+    #define DEVICE              "WIFI_SENSOR"
+
+    // DHT12 Sensor
+    #define DHT_SUPPORT         1
+    #define DHT_PIN             14
+    #define DHT_TYPE            DHT_CHIP_DHT12
+
+    // LDR Sensor
+    #define LDR_SUPPORT         1
+    #define LDR_TYPE            LDR_GL5528
+    #define LDR_ON_GROUND       false
+    #define LDR_RESISTOR        10000
 
 // -----------------------------------------------------------------------------
 // TEST boards (do not use!!)
@@ -3674,7 +3737,11 @@
     #define NOFUSS_SUPPORT      1
     #define UART_MQTT_SUPPORT   1
     #define INFLUXDB_SUPPORT    1
-    #define IR_SUPPORT    1
+    #define IR_SUPPORT          1
+    #define RF_SUPPORT          1
+
+    #define RFB_DIRECT          1
+    #define RFB_RX_PIN          4
 
 #elif defined(TRAVIS03)
 
@@ -3699,10 +3766,12 @@
     #define MY92XX_COMMAND      MY92XX_COMMAND_DEFAULT
     #define MY92XX_MAPPING      4, 3, 5, 0, 1
 
-    // A bit of Analog EMON (analog)
-    #ifndef EMON_ANALOG_SUPPORT
+    // A bit of analog, 
+    // will not work on real life since they all share GPIO
+    // but it's OK to test build
     #define EMON_ANALOG_SUPPORT 1
-    #endif
+    #define NTC_SUPPORT         1
+    #define LDR_SUPPORT         1
 
     #define PULSEMETER_SUPPORT  1
 
