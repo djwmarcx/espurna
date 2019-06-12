@@ -2,7 +2,7 @@
 
 SENSOR MODULE
 
-Copyright (C) 2016-2018 by Xose Pérez <xose dot perez at gmail dot com>
+Copyright (C) 2016-2019 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
@@ -102,8 +102,7 @@ double _magnitudeProcess(unsigned char type, double value) {
 
 #if WEB_SUPPORT
 
-template<typename T>
-void _sensorWebSocketMagnitudes(JsonObject& root, T prefix) {
+template<typename T> void _sensorWebSocketMagnitudes(JsonObject& root, T prefix) {
 
     // ws produces flat list <prefix>Magnitudes
     String ws_name = String(prefix);
